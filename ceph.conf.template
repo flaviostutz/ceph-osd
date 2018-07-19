@@ -1,0 +1,7 @@
+[global]
+mon host = ${PEER_MONITOR_HOST}
+# public network = {network}[, {network}]
+# cluster network = {network}[, {network}]
+auth cluster required = none
+auth service required = none
+auth client required = none
