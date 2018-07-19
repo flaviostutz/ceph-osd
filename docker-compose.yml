@@ -3,8 +3,7 @@ version: '3.5'
 services:
 
   mon1:
-    # image: flaviostutz/ceph-monitor
-    image: a6cee5061371
+    image: flaviostutz/ceph-monitor
     environment:
       - LOG_LEVEL=1
 
@@ -14,9 +13,20 @@ services:
       - LOG_LEVEL=10
       - PEER_MONITOR_HOST=mon1
       - OSD_EXT4_SUPPORT=true
+      - OSD_JOURNAL_SIZE=512
     volumes:
-      - osd1:/var/lib/ceph/osd
+      - /mnt/sdb-osd1:/var/lib/ceph/osd
+
+  osd2:
+    build: .
+    environment:
+      - LOG_LEVEL=10
+      - PEER_MONITOR_HOST=mon1
+      - OSD_EXT4_SUPPORT=true
+      - OSD_JOURNAL_SIZE=512
+    volumes:
+      - osd2:/var/lib/ceph/osd
 
 volumes:
-  osd1:
+  osd2:
 

@@ -13,11 +13,6 @@ if [ "$PEER_MONITOR_HOST" == "" ]; then
     exit 1
 fi
 
-if ! grep '/var/lib/ceph/osd ' /proc/mounts; then
-    echo "You have to mount volume '/var/lib/ceph/osd'. Example: mkfs.xfs /dev/ssd1; mount /dev/ssd1 /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd. Exiting."
-    exit 1
-fi
-
 echo "Creating ceph.conf..."
 cat /ceph.conf.template | envsubst > /etc/ceph/ceph.conf
 if [ "$OSD_EXT4_SUPPORT" == "true" ]; then
@@ -28,7 +23,8 @@ cat /etc/ceph/ceph.conf
 
 # if [ -z "$(ls -A ${/var/lib/ceph/osd})" ]; then
 if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
-    echo "Mounted OSD data dir is empty. Preparing and activating a new OSD..."
+    echo ">>> OSD data dir is empty. Preparing and activating a new OSD..."
+    echo "Be sure to have prepared and mounted /var/lib/ceph/osd externaly. Example: mkfs.xfs /dev/sdb; mount /dev/sdb /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd. Exiting."
 
     UUID=$(uuidgen)
 
@@ -46,10 +42,14 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     echo "Initializing OSD data dir ${OSD_PATH}..."
     ceph-osd --cluster "${CLUSTER_NAME}" -i "${ID}" --mkfs --osd-uuid "${UUID}"
     echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
+    echo "Adding newly created OSD to CRUSH map..."
+    ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_LOCATION}
+    echo "Creating 'default' pool if it doesn't exists yet..."
+    ceph osd pool create default 100
 
 else
     FOUND=0
-    echo "Found data on mounted OSD data dir. Binding this OSD daemon to the OSD ID found in dir path."
+    echo ">>> Found data on mounted OSD data dir. Binding this OSD daemon to the OSD ID found in dir path."
     for ID in $(find /var/lib/ceph/osd -maxdepth 1 -mindepth 1 -name "${CLUSTER_NAME}*" | sed 's/.*-//'); do
         OSD_PATH="/var/lib/ceph/osd/${CLUSTER_NAME}-${ID}"
         echo "Checking osd path ${OSD_PATH}..."
@@ -76,5 +76,5 @@ else
 fi
 
 echo ""
-echo "Starting OSD $CLUSTER_NAME-$ID at $OSD_PATH..."
+echo ">>> Starting OSD $CLUSTER_NAME-$ID at $OSD_PATH..."
 ceph-osd -d --debug_osd $LOG_LEVEL --osd-data $OSD_PATH --id=$ID --cluster=$CLUSTER_NAME
