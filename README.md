@@ -24,7 +24,7 @@ services:
       - LOG_LEVEL=1
 
   osd1:
-    build: .
+    image: flaviostutz/ceph-osd
     environment:
       - LOG_LEVEL=10
       - PEER_MONITOR_HOST=mon1
@@ -33,7 +33,7 @@ services:
       - /mnt/sdb-osd1:/var/lib/ceph/osd
 
   osd2:
-    build: .
+    image: flaviostutz/ceph-osd
     environment:
       - LOG_LEVEL=10
       - PEER_MONITOR_HOST=mon1
