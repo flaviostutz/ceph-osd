@@ -56,15 +56,15 @@ services:
     volumes:
       - osd3:/var/lib/ceph/osd
 
-  # osd4:
-  #   build: .
-  #   environment:
-  #     - PEER_MONITOR_HOST=mon0
-  #     - OSD_EXT4_SUPPORT=true
-  #     - OSD_JOURNAL_SIZE=512
-  #     - ETCD_URL=http://etcd0:2379
-  #   volumes:
-  #     - osd4:/var/lib/ceph/osd
+  osd4:
+    build: .
+    environment:
+      - PEER_MONITOR_HOST=mon0
+      - OSD_EXT4_SUPPORT=true
+      - OSD_JOURNAL_SIZE=512
+      - ETCD_URL=http://etcd0:2379
+    volumes:
+      - osd4:/var/lib/ceph/osd
       
 volumes:
   etcd0:
