@@ -27,7 +27,6 @@ services:
   osd1:
     build: .
     environment:
-      - LOG_LEVEL=1
       - PEER_MONITOR_HOST=mon0
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
@@ -39,7 +38,6 @@ services:
   osd2:
     build: .
     environment:
-      - LOG_LEVEL=1
       - PEER_MONITOR_HOST=mon0
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
@@ -47,9 +45,30 @@ services:
     volumes:
       - osd2:/var/lib/ceph/osd
 
+  osd3:
+    build: .
+    environment:
+      - PEER_MONITOR_HOST=mon0
+      - OSD_EXT4_SUPPORT=true
+      - OSD_JOURNAL_SIZE=512
+      - ETCD_URL=http://etcd0:2379
+    volumes:
+      - osd3:/var/lib/ceph/osd
+
+  osd4:
+    build: .
+    environment:
+      - PEER_MONITOR_HOST=mon0
+      - OSD_EXT4_SUPPORT=true
+      - OSD_JOURNAL_SIZE=512
+      - ETCD_URL=http://etcd0:2379
+    volumes:
+      - osd4:/var/lib/ceph/osd
+      
 volumes:
   etcd0:
   mon0:
   osd1:
   osd2:
-
+  osd3:
+  osd4:
