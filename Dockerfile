@@ -1,4 +1,4 @@
-FROM flaviostutz/ceph-base:ubuntu-luminous-12.2.4.0
+FROM flaviostutz/ceph-base:ubuntu-mimic-13.2.0.2
 
 ENV CLUSTER_NAME 'ceph'
 ENV PEER_MONITOR_HOST ''

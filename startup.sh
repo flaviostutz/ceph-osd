@@ -48,33 +48,47 @@ while true; do
         exit 2
     fi
     echo "Retrying in 1s..."
+    sleep 1
 done
 
 if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     echo ">>> OSD data dir is empty. Preparing and activating a new OSD..."
     echo "Be sure to have prepared and mounted /var/lib/ceph/osd externaly. This is where the actual data for this OSD will be placed. Example: mkfs.xfs /dev/sdb; mount /dev/sdb /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd. Exiting."
 
-    UUID=$(uuidgen)
-
     while true; do
-        ceph ping mon.* && break
+        ceph mon dump && break
         echo "Retrying to connect to peer monitor ${PEER_MONITOR_HOST} in 1 second..."
         sleep 1
     done
 
+    OSD_SECRET=$(ceph-authtool --gen-print-key)
+    UUID=$(uuidgen)
+
+    # echo "{\"cephx_secret\": \"$OSD_SECRET\"}" > /tmp/osdsecret
+    # ID=$(ceph osd new $UUID -i /tmp/osdsecret -n client.admin -k /etc/ceph/keyring)
     ID=$(ceph osd new $UUID)
     echo "OSD created with ID ${ID}"
 
     OSD_PATH="/var/lib/ceph/osd/${CLUSTER_NAME}-${ID}"
-    mkdir -p $OSD_PATH
+
     echo "Initializing OSD data dir ${OSD_PATH}..."
+    mkdir -p $OSD_PATH
     cp /etc/ceph/keyring ${OSD_PATH}/keyring
-    ceph-osd --cluster "${CLUSTER_NAME}" -i "${ID}" --mkfs --osd-uuid "${UUID}" --mkkey
-    echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
+
     echo "Creating OSD key..."
-    ceph auth add osd.${ID} osd 'allow *' mon 'allow rwx' -i ${OSD_PATH}/keyring
+    OSD_KEY=$(ceph auth get-or-create osd.${ID} osd 'allow *' mon 'allow rwx' -i ${OSD_PATH}/keyring)
+    echo "${OSD_KEY}" >> ${OSD_PATH}/keyring
+    # ceph auth ls
+
+    echo "Preparing OSD data dir for BLUESTORE..."
+    FSID=$(ceph mon dump | grep 'fsid' | cut -d ' ' -f 2)
+    ceph-osd --cluster ${CLUSTER_NAME} --fsid $FSID --no-mon-config -i $ID --mkfs --osd-uuid ${UUID} --osd-objectstore bluestore
+    # ceph-osd --cluster "${CLUSTER_NAME}" -i "${ID}" --mkfs --osd-uuid "${UUID}"
+    # echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
+
     echo "Adding newly created OSD to CRUSH map..."
     ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_LOCATION}
+
     echo "Creating 'default' pool if it doesn't exists yet..."
     ceph osd pool create default 100
 

@@ -1,7 +1,5 @@
 [global]
 mon host = ${PEER_MONITOR_HOST}
-# public network = {network}[, {network}]
-# cluster network = {network}[, {network}]
 auth cluster required = cephx
 auth service required = cephx
 auth client required = cephx
