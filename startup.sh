@@ -21,10 +21,38 @@ if [ "$OSD_EXT4_SUPPORT" == "true" ]; then
 fi
 cat /etc/ceph/ceph.conf
 
-# if [ -z "$(ls -A ${/var/lib/ceph/osd})" ]; then
+resolveKeyring() {
+    if [ -f /etc/ceph/keyring ]; then
+        echo "Monitor key already known"
+        return 0
+    elif [ "$ETCD_URL" != "" ]; then 
+        echo "Retrieving monitor key from ETCD..."
+        KEYRING=$(etcdctl --endpoints $ETCD_URL get "/$CLUSTER_NAME/keyring")
+        if [ $? -eq 0 ]; then
+            echo $KEYRING > /tmp/base64keyring
+            base64 -d -i /tmp/base64keyring > /etc/ceph/keyring
+            return 0
+        else
+            return 2
+        fi
+    else
+        echo "Monitor key doesn't exist and ETCD was not defined. Cannot retrieve keys."
+        return 1
+    fi
+}
+
+echo "Retrieving keyring for connecting to monitors..."
+while true; do
+    resolveKeyring && break
+    if [ $? -eq 1 ]; then
+        exit 2
+    fi
+    echo "Retrying in 1s..."
+done
+
 if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     echo ">>> OSD data dir is empty. Preparing and activating a new OSD..."
-    echo "Be sure to have prepared and mounted /var/lib/ceph/osd externaly. Example: mkfs.xfs /dev/sdb; mount /dev/sdb /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd. Exiting."
+    echo "Be sure to have prepared and mounted /var/lib/ceph/osd externaly. This is where the actual data for this OSD will be placed. Example: mkfs.xfs /dev/sdb; mount /dev/sdb /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd. Exiting."
 
     UUID=$(uuidgen)
 
@@ -40,8 +68,11 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     OSD_PATH="/var/lib/ceph/osd/${CLUSTER_NAME}-${ID}"
     mkdir -p $OSD_PATH
     echo "Initializing OSD data dir ${OSD_PATH}..."
-    ceph-osd --cluster "${CLUSTER_NAME}" -i "${ID}" --mkfs --osd-uuid "${UUID}"
+    cp /etc/ceph/keyring ${OSD_PATH}/keyring
+    ceph-osd --cluster "${CLUSTER_NAME}" -i "${ID}" --mkfs --osd-uuid "${UUID}" --mkkey
     echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
+    echo "Creating OSD key..."
+    ceph auth add osd.${ID} osd 'allow *' mon 'allow rwx' -i ${OSD_PATH}/keyring
     echo "Adding newly created OSD to CRUSH map..."
     ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_LOCATION}
     echo "Creating 'default' pool if it doesn't exists yet..."

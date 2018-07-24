@@ -18,33 +18,47 @@ version: '3.5'
 
 services:
 
-  mon1:
+   etcd0:
+    image: quay.io/coreos/etcd
+    volumes:
+      - etcd0:/etcd_data
+    environment:
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd0:2379
+
+  mon0:
     image: flaviostutz/ceph-monitor
     environment:
-      - LOG_LEVEL=1
+      - ETCD_URL=http://etcd0:2379
+    volumes:
+      - mon0:/var/lib/ceph/mon
 
   osd1:
     image: flaviostutz/ceph-osd
     environment:
-      - LOG_LEVEL=10
-      - PEER_MONITOR_HOST=mon1
+      - PEER_MONITOR_HOST=mon0
+      - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
+      - ETCD_URL=http://etcd0:2379
     volumes:
       - /mnt/sdb-osd1:/var/lib/ceph/osd
 
   osd2:
     image: flaviostutz/ceph-osd
     environment:
-      - LOG_LEVEL=10
-      - PEER_MONITOR_HOST=mon1
+      - PEER_MONITOR_HOST=mon0
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
+      - ETCD_URL=http://etcd0:2379
     volumes:
       - osd2:/var/lib/ceph/osd
       # this is just to show that you can use a regular Docker volume for testing purposes (need to enable 'ext4' support because of filename length restrictions)
 
 volumes:
+  etcd0:
+  mon0:
   osd2:
+
 ```
 
 * run with "docker-compose up"
