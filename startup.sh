@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-set -x
+# set -x
 
 echo "Defining default values for ENVs..."
 if [ "$CLUSTER_NAME" == "" ]; then
@@ -82,7 +82,7 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
 
     echo "Preparing OSD data dir for BLUESTORE..."
     FSID=$(ceph mon dump | grep 'fsid' | cut -d ' ' -f 2)
-    ceph-osd --cluster ${CLUSTER_NAME} --fsid $FSID --no-mon-config -i $ID --mkfs --osd-uuid ${UUID} --osd-objectstore bluestore
+    ceph-osd --cluster ${CLUSTER_NAME} --fsid $FSID -i $ID --mkfs --osd-uuid ${UUID} --osd-objectstore bluestore
     # ceph-osd --cluster "${CLUSTER_NAME}" -i "${ID}" --mkfs --osd-uuid "${UUID}"
     # echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
 
