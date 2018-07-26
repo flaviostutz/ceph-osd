@@ -13,6 +13,7 @@ services:
   mon0:
     image: flaviostutz/ceph-monitor
     environment:
+      - CREATE_CLUSTER=true
       - ETCD_URL=http://etcd0:2379
     volumes:
       - mon0:/var/lib/ceph/mon
