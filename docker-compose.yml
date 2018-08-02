@@ -4,19 +4,21 @@ services:
 
   etcd0:
     image: quay.io/coreos/etcd
-    volumes:
-      - etcd0:/etcd_data
+    ports:
+      - 12379:2379
     environment:
       - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://${HOST_IP}:12379
 
   mon0:
     image: flaviostutz/ceph-monitor
+    ports:
+      - 16789:6789
     environment:
       - CREATE_CLUSTER=true
-      - ETCD_URL=http://etcd0:2379
-    volumes:
-      - mon0:/var/lib/ceph/mon
+      - ETCD_URL=http://${HOST_IP}:12379
+      - MONITOR_ADVERTISE_IP=${HOST_IP}
+      - MONITOR_ADVERTISE_PORT=16789
 
   # mon1:
   #   image: flaviostutz/ceph-monitor
@@ -27,50 +29,31 @@ services:
 
   osd1:
     build: .
+    network_mode: host
     environment:
       - LOG_LEVEL=0
-      - PEER_MONITOR_HOST=mon0
+      - PEER_MONITOR_HOST=${HOST_IP}:16789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
-      - ETCD_URL=http://etcd0:2379
-    volumes:
-      - osd1:/var/lib/ceph/osd
-      # - /mnt/sdb-osd1:/var/lib/ceph/osd
+      - ETCD_URL=http://${HOST_IP}:12379
+      # - OSD_PUBLIC_IP=${HOST_IP}
 
   osd2:
     build: .
+    network_mode: host
     environment:
-      - PEER_MONITOR_HOST=mon0
+      - PEER_MONITOR_HOST=${HOST_IP}:16789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
-      - ETCD_URL=http://etcd0:2379
-    volumes:
-      - osd2:/var/lib/ceph/osd
+      - ETCD_URL=http://${HOST_IP}:12379
+      # - OSD_PUBLIC_IP=${HOST_IP}
 
   osd3:
     build: .
+    network_mode: host
     environment:
-      - PEER_MONITOR_HOST=mon0
+      - PEER_MONITOR_HOST=${HOST_IP}:16789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
-      - ETCD_URL=http://etcd0:2379
-    volumes:
-      - osd3:/var/lib/ceph/osd
-
-  osd4:
-    build: .
-    environment:
-      - PEER_MONITOR_HOST=mon0
-      - OSD_EXT4_SUPPORT=true
-      - OSD_JOURNAL_SIZE=512
-      - ETCD_URL=http://etcd0:2379
-    volumes:
-      - osd4:/var/lib/ceph/osd
-      
-volumes:
-  etcd0:
-  mon0:
-  osd1:
-  osd2:
-  osd3:
-  osd4:
+      - ETCD_URL=http://${HOST_IP}:12379
+      # - OSD_PUBLIC_IP=${HOST_IP}

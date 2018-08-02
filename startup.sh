@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-# set -x
+set -x
 
 
 echo "Defining default values for ENVs..."
@@ -54,7 +54,7 @@ done
 
 if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     echo ">>> OSD data dir is empty. Preparing and activating a new OSD..."
-    echo "Be sure to have prepared and mounted /var/lib/ceph/osd externaly. This is where the actual data for this OSD will be placed. Example: mkfs.xfs /dev/sdb; mount /dev/sdb /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd. Exiting."
+    echo "Be sure to have prepared and mounted /var/lib/ceph/osd externaly. This is where the actual data for this OSD will be placed. Example: mkfs.xfs /dev/sdb; mount /dev/sdb /mnt/osd1; docker -v /mnt/osd1:/var/lib/ceph/osd."
 
     while true; do
         ceph mon dump && break
@@ -120,6 +120,16 @@ else
         exit 1
     fi
 fi
+
+export LOCAL_IP=$(ip route get 8.8.8.8 | grep -oE 'src ([0-9\.]+)' | cut -d ' ' -f 2)
+if [ "$OSD_PUBLIC_IP" == "" ]; then
+    export OSD_PUBLIC_IP=LOCAL_IP
+fi
+
+echo "" >> /etc/ceph/ceph.conf
+echo "[osd.$ID]" >> /etc/ceph/ceph.conf
+echo "public addr = $OSD_PUBLIC_IP" >> /etc/ceph/ceph.conf
+echo "cluster addr = $OSD_CLUSTER_IP" >> /etc/ceph/ceph.conf
 
 echo ""
 echo ">>> Starting OSD $CLUSTER_NAME-$ID at $OSD_PATH..."
