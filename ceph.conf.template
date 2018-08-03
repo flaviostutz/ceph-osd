@@ -1,5 +1,4 @@
 [global]
-mon host = ${PEER_MONITOR_HOST}
 auth cluster required = cephx
 auth service required = cephx
 auth client required = cephx

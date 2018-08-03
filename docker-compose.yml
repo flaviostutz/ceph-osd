@@ -4,56 +4,66 @@ services:
 
   etcd0:
     image: quay.io/coreos/etcd
-    ports:
-      - 12379:2379
+    network_mode: host
     environment:
-      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:12379
       - ETCD_ADVERTISE_CLIENT_URLS=http://${HOST_IP}:12379
 
-  mon0:
+  mon1:
     image: flaviostutz/ceph-monitor
-    ports:
-      - 16789:6789
+    network_mode: host
     environment:
       - CREATE_CLUSTER=true
       - ETCD_URL=http://${HOST_IP}:12379
-      - MONITOR_ADVERTISE_IP=${HOST_IP}
-      - MONITOR_ADVERTISE_PORT=16789
+      - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:16789
+      - MONITOR_BIND_PORT=16789
 
-  # mon1:
-  #   image: flaviostutz/ceph-monitor
-  #   environment:
-  #     - LOG_LEVEL=0
-  #     - PEER_MONITOR_HOST=mon0
-  #     - ETCD_URL=http://etcd0:2379
+  mon2:
+    image: flaviostutz/ceph-monitor
+    ports:
+      - 26789:6789
+    environment:
+      - ETCD_URL=http://${HOST_IP}:12379
+      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:26789
+
+  mon3:
+    image: flaviostutz/ceph-monitor
+    ports:
+      - 36789:6789
+    environment:
+      - ETCD_URL=http://${HOST_IP}:12379
+      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:36789
 
   osd1:
     build: .
     network_mode: host
+    pid: host
     environment:
-      - LOG_LEVEL=0
-      - PEER_MONITOR_HOST=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
       # - OSD_PUBLIC_IP=${HOST_IP}
+      # - OSD_CLUSTER_IP=${HOST_IP}
 
   osd2:
     build: .
     network_mode: host
+    pid: host
     environment:
-      - PEER_MONITOR_HOST=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
-      # - OSD_PUBLIC_IP=${HOST_IP}
 
   osd3:
     build: .
     network_mode: host
+    pid: host
     environment:
-      - PEER_MONITOR_HOST=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
-      # - OSD_PUBLIC_IP=${HOST_IP}

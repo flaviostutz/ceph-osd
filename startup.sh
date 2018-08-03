@@ -9,8 +9,8 @@ if [ "$CLUSTER_NAME" == "" ]; then
     exit 1
 fi
 
-if [ "$PEER_MONITOR_HOST" == "" ]; then
-    echo "PEER_MONITOR_HOST cannot be empty"
+if [ "$MONITOR_HOSTS" == "" ]; then
+    echo "MONITOR_HOSTS must be defined"
     exit 1
 fi
 
@@ -20,6 +20,11 @@ if [ "$OSD_EXT4_SUPPORT" == "true" ]; then
     echo "osd max object name len = 256" >> /etc/ceph/ceph.conf
     echo "osd max object namespace len = 64" >> /etc/ceph/ceph.conf
 fi
+
+if [ "$MONITOR_HOSTS" != "" ]; then
+    echo "mon host = ${MONITOR_HOSTS}" >> /etc/ceph/ceph.conf
+fi
+
 cat /etc/ceph/ceph.conf
 
 resolveKeyring() {
@@ -58,7 +63,7 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
 
     while true; do
         ceph mon dump && break
-        echo "Retrying to connect to peer monitor ${PEER_MONITOR_HOST} in 1 second..."
+        echo "Retrying to connect to monitor ${MONITOR_HOSTS} in 1 second..."
         sleep 1
     done
 
