@@ -96,7 +96,7 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_LOCATION}
 
     echo "Creating 'default' pool if it doesn't exists yet..."
-    ceph osd pool create default 32
+    ceph osd pool create default 100
 
 else
     FOUND=0
