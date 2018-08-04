@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-# set -x
+set -x
 
 
 echo "Defining default values for ENVs..."
@@ -93,39 +93,7 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     # echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
 
     echo "Adding newly created OSD to CRUSH map..."
-    CRUSH_LOCATION=`$OSD_CRUSH_ROOT default`
-    if [ "$OSD_CRUSH_HOST" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION host=$OSD_CRUSH_HOST`
-    fi 
-    if [ "$OSD_CRUSH_CHASSIS" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION chassis=$OSD_CRUSH_CHASSIS`
-    fi 
-    if [ "$OSD_CRUSH_RACK" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION rack=$OSD_CRUSH_RACK`
-    fi 
-    if [ "$OSD_CRUSH_ROW" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION row=$OSD_CRUSH_ROW`
-    fi 
-    if [ "$OSD_CRUSH_PDU" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION pdu=$OSD_CRUSH_PDU`
-    fi 
-    if [ "$OSD_CRUSH_POD" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION pod=$OSD_CRUSH_POD`
-    fi 
-    if [ "$OSD_CRUSH_ROOM" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION room=$OSD_CRUSH_ROOM`
-    fi 
-    if [ "$OSD_CRUSH_DATACENTER" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION datacenter=$OSD_CRUSH_DATACENTER`
-    fi 
-    if [ "$OSD_CRUSH_POD" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION pod=$OSD_CRUSH_POD`
-    fi 
-    if [ "$OSD_CRUSH_REGION" != "" ]; then
-        CRUSH_LOCATION=`$CRUSH_LOCATION region=$OSD_CRUSH_REGION`
-    fi 
-
-    ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_ROOT} $CRUSH_LOCATION
+    ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} ${OSD_CRUSH_LOCATION}
 
     echo "Creating 'default' pool if it doesn't exists yet..."
     ceph osd pool create default 100
