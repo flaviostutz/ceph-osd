@@ -45,7 +45,7 @@ services:
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
-      - OSD_CRUSH_LOCATION=root=default rack=rack1 host=osd1host
+      - OSD_CRUSH_LOCATION=root=default host=h3
       # - OSD_PUBLIC_IP=${HOST_IP}
       # - OSD_CLUSTER_IP=${HOST_IP}
 
@@ -58,7 +58,7 @@ services:
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
-      - OSD_CRUSH_LOCATION=root=default rack=rack1 host=osd2host
+      - OSD_CRUSH_LOCATION=root=default host=h3
 
   osd3:
     build: .
@@ -69,4 +69,4 @@ services:
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
-      - OSD_CRUSH_LOCATION=root=default rack=rack2 host=osd3host
+      - OSD_CRUSH_LOCATION=root=default host=h4

@@ -128,13 +128,17 @@ fi
 
 export LOCAL_IP=$(ip route get 8.8.8.8 | grep -oE 'src ([0-9\.]+)' | cut -d ' ' -f 2)
 if [ "$OSD_PUBLIC_IP" == "" ]; then
-    export OSD_PUBLIC_IP=LOCAL_IP
+    export OSD_PUBLIC_IP=$LOCAL_IP
 fi
 
 echo "" >> /etc/ceph/ceph.conf
 echo "[osd.$ID]" >> /etc/ceph/ceph.conf
 echo "public addr = $OSD_PUBLIC_IP" >> /etc/ceph/ceph.conf
-echo "cluster addr = $OSD_CLUSTER_IP" >> /etc/ceph/ceph.conf
+echo "crush location = ${OSD_CRUSH_LOCATION}" >> /etc/ceph/ceph.conf
+if [ "$OSD_CLUSTER_IP" != "" ]; then
+    echo "cluster addr = $OSD_CLUSTER_IP" >> /etc/ceph/ceph.conf
+fi
+cat /etc/ceph/ceph.conf
 
 echo ""
 echo ">>> Starting OSD $CLUSTER_NAME-$ID at $OSD_PATH..."
