@@ -18,23 +18,23 @@ services:
       - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:16789
       - MONITOR_BIND_PORT=16789
 
-  mon2:
-    image: flaviostutz/ceph-monitor
-    ports:
-      - 26789:6789
-    environment:
-      - ETCD_URL=http://${HOST_IP}:12379
-      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
-      - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:26789
+  # mon2:
+  #   image: flaviostutz/ceph-monitor
+  #   ports:
+  #     - 26789:6789
+  #   environment:
+  #     - ETCD_URL=http://${HOST_IP}:12379
+  #     - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+  #     - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:26789
 
-  mon3:
-    image: flaviostutz/ceph-monitor
-    ports:
-      - 36789:6789
-    environment:
-      - ETCD_URL=http://${HOST_IP}:12379
-      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
-      - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:36789
+  # mon3:
+  #   image: flaviostutz/ceph-monitor
+  #   ports:
+  #     - 36789:6789
+  #   environment:
+  #     - ETCD_URL=http://${HOST_IP}:12379
+  #     - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+  #     - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:36789
 
   osd1:
     build: .
@@ -45,6 +45,8 @@ services:
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
+      - OSD_CRUSH_HOST=osd1
+      - OSD_CRUSH_RACK=rack1
       # - OSD_PUBLIC_IP=${HOST_IP}
       # - OSD_CLUSTER_IP=${HOST_IP}
 
@@ -57,6 +59,8 @@ services:
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
+      - OSD_CRUSH_HOST=osd2
+      - OSD_CRUSH_RACK=rack2
 
   osd3:
     build: .
@@ -67,3 +71,5 @@ services:
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
+      - OSD_CRUSH_HOST=osd3
+      - OSD_CRUSH_RACK=rack3
