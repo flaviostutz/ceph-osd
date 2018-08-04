@@ -93,7 +93,18 @@ if [[ -n "$(find /var/lib/ceph/osd -prune -empty)" ]]; then
     # echo "New OSD created for OSD $CLUSTER_NAME-$ID" > /osd-initialization
 
     echo "Adding newly created OSD to CRUSH map..."
-    ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_LOCATION}
+    CRUSH_LOCATION=`$OSD_CRUSH_ROOT default`
+    if [ "$OSD_CRUSH_HOST" != "" ]; then
+        CRUSH_LOCATION=`$CRUSH_LOCATION host=$OSD_CRUSH_HOST`
+    fi 
+    if [ "$OSD_CRUSH_DATACENTER" != "" ]; then
+        CRUSH_LOCATION=`$CRUSH_LOCATION host=$OSD_CRUSH_DATACENTER`
+    fi 
+    if [ "$OSD_CRUSH_POD" != "" ]; then
+        CRUSH_LOCATION=`$CRUSH_LOCATION host=$OSD_CRUSH_POD`
+    fi 
+
+    ceph osd crush add ${ID} ${OSD_CRUSH_WEIGHT} root=${OSD_CRUSH_ROOT} $CRUSH_LOCATION
 
     echo "Creating 'default' pool if it doesn't exists yet..."
     ceph osd pool create default 100
