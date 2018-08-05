@@ -13,35 +13,37 @@ services:
     image: flaviostutz/ceph-monitor
     network_mode: host
     environment:
+      - LOG_LEVEL=0
       - CREATE_CLUSTER=true
       - ETCD_URL=http://${HOST_IP}:12379
+      - PEER_MONITOR_HOSTS=${HOST_IP}:26789,${HOST_IP}:36789
       - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:16789
       - MONITOR_BIND_PORT=16789
 
-  # mon2:
-  #   image: flaviostutz/ceph-monitor
-  #   ports:
-  #     - 26789:6789
-  #   environment:
-  #     - ETCD_URL=http://${HOST_IP}:12379
-  #     - PEER_MONITOR_HOSTS=${HOST_IP}:16789
-  #     - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:26789
+  mon2:
+    image: flaviostutz/ceph-monitor
+    network_mode: host
+    environment:
+      - ETCD_URL=http://${HOST_IP}:12379
+      - PEER_MONITOR_HOSTS=${HOST_IP}:16789,${HOST_IP}:36789
+      - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:26789
+      - MONITOR_BIND_PORT=26789
 
   # mon3:
   #   image: flaviostutz/ceph-monitor
-  #   ports:
-  #     - 36789:6789
+  #   network_mode: host
   #   environment:
   #     - ETCD_URL=http://${HOST_IP}:12379
-  #     - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+  #     - PEER_MONITOR_HOSTS=${HOST_IP}:16789,${HOST_IP}:26789
   #     - MONITOR_ADVERTISE_ADDRESS=${HOST_IP}:36789
+  #     - MONITOR_BIND_PORT=36789
 
   osd1:
     build: .
     network_mode: host
     pid: host
     environment:
-      - MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789,${HOST_IP}:26789,${HOST_IP}:36789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
@@ -54,7 +56,7 @@ services:
     network_mode: host
     pid: host
     environment:
-      - MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789,${HOST_IP}:26789,${HOST_IP}:36789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
@@ -65,7 +67,7 @@ services:
     network_mode: host
     pid: host
     environment:
-      - MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789,${HOST_IP}:26789,${HOST_IP}:36789
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://${HOST_IP}:12379
