@@ -18,19 +18,21 @@ version: '3.5'
 services:
 
    etcd0:
-    image: quay.io/coreos/etcd
+    image: quay.io/coreos/etcd:v3.2.25
     environment:
       - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd0:2379
 
   mon0:
     image: flaviostutz/ceph-monitor
+    pid: host
     environment:
       - CREATE_CLUSTER=true
       - ETCD_URL=http://etcd0:2379
 
   osd1:
     image: flaviostutz/ceph-osd
+    pid: host
     environment:
       - PEER_MONITOR_HOSTS=mon0
       - OSD_EXT4_SUPPORT=true
@@ -39,6 +41,7 @@ services:
 
   osd2:
     image: flaviostutz/ceph-osd
+    pid: host
     environment:
       - PEER_MONITOR_HOSTS=mon0
       - OSD_EXT4_SUPPORT=true
@@ -100,6 +103,7 @@ services:
 
   mon0:
     image: flaviostutz/ceph-monitor
+    pid: host
     ports:
       - 16789:6789
     environment:
@@ -111,6 +115,7 @@ services:
   osd1:
     build: .
     network_mode: host
+    pid: host
     environment:
       - LOG_LEVEL=0
       - PEER_MONITOR_HOSTS=${HOST_IP}:16789
@@ -123,6 +128,7 @@ services:
   osd2:
     build: .
     network_mode: host
+    pid: host
     environment:
       - PEER_MONITOR_HOSTS=${HOST_IP}:16789
       - ETCD_URL=http://${HOST_IP}:12379
@@ -132,6 +138,7 @@ services:
   osd3:
     build: .
     network_mode: host
+    pid: host
     environment:
       - PEER_MONITOR_HOSTS=${HOST_IP}:16789
       - ETCD_URL=http://${HOST_IP}:12379
