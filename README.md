@@ -1,6 +1,8 @@
 # ceph-osd
 Docker image for running a Ceph OSD daemon
 
+Attention: You need to run this daemon in a machine running Kernel >= 4.5.2
+
 ## Usage
 
 #### Minimal docker-compose.yml
