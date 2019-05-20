@@ -1,4 +1,4 @@
-FROM flaviostutz/ceph-base:13.2.5
+FROM flaviostutz/ceph-base:13.2.5.2
 
 ENV CLUSTER_NAME 'ceph'
 ENV PEER_MONITOR_HOST ''
