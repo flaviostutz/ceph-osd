@@ -36,7 +36,7 @@ services:
     image: flaviostutz/ceph-osd
     pid: host
     environment:
-      - PEER_MONITOR_HOSTS=mon0
+      - MONITOR_HOSTS=mon0
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://etcd0:2379
@@ -45,7 +45,7 @@ services:
     image: flaviostutz/ceph-osd
     pid: host
     environment:
-      - PEER_MONITOR_HOSTS=mon0
+      - MONITOR_HOSTS=mon0
       - OSD_EXT4_SUPPORT=true
       - OSD_JOURNAL_SIZE=512
       - ETCD_URL=http://etcd0:2379
@@ -120,7 +120,7 @@ services:
     pid: host
     environment:
       - LOG_LEVEL=0
-      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789
       - ETCD_URL=http://${HOST_IP}:12379
       # - OSD_PUBLIC_IP=${HOST_IP}
       # - OSD_CLUSTER_IP=${HOST_IP}
@@ -132,7 +132,7 @@ services:
     network_mode: host
     pid: host
     environment:
-      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789
       - ETCD_URL=http://${HOST_IP}:12379
     volumes:
       - /mnt/osd2-sdb:/var/lib/ceph/osd
@@ -142,7 +142,7 @@ services:
     network_mode: host
     pid: host
     environment:
-      - PEER_MONITOR_HOSTS=${HOST_IP}:16789
+      - MONITOR_HOSTS=${HOST_IP}:16789
       - ETCD_URL=http://${HOST_IP}:12379
     volumes:
       - /mnt/osd3-sdc:/var/lib/ceph/osd
